@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
+use App\Models\Store;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -23,6 +25,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('dashboard.index-dashboard');
+        $data['stores'] = Store::all()->where('user_id',Auth()->user()->id);
+        return view('dashboard.index-dashboard',$data);
     }
 }

@@ -14,7 +14,7 @@
                     <h4>Total Stores</h4>
                 </div>
                 <div class="card-body">
-                    10
+                    {{ $stores->count() }}
                 </div>
                 </div>
             </div>
@@ -29,7 +29,15 @@
                     <h4>Total Products</h4>
                 </div>
                 <div class="card-body">
-                    10
+                    @php
+                        $totalPro = 0;
+                        if(isset($stores)){
+                            foreach ($stores as $val) {
+                                $totalPro += $val->products->count();
+                            }
+                        }
+                        echo $totalPro;
+                    @endphp
                 </div>
                 </div>
             </div>
