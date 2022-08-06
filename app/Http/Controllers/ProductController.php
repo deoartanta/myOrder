@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Store;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
@@ -12,9 +14,20 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     public function index()
     {
-        //
+        $data['stores'] = Store::all()->where('user_id',Auth()->user()->id);
+        $id = [];
+        foreach ($data['stores'] as $val) {
+            $id[] += $val->id;
+        }
+        $data['products'] = Product::all()->whereIn('store_id', $id);
+        return view('product.index-product',$data);
     }
 
     /**
@@ -35,7 +48,27 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validatorRule = [
+            'store_id'=>'required',
+            'nm_product'=>'required',
+            'hrg_product'=>'required',
+        ];
+        $validator = Validator::make($request->all(),$validatorRule);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput($request->input())->with([
+                'stsAction'=> 'Failed to add product',
+                'iconAction'=>'error',
+                'titleAction'=>'Sorry..',
+                'btnAction'=>true
+            ]);
+        }
+        Product::create($request->all());
+        return redirect()->back()->with([
+            'stsAction'=> 'Product added successfully',
+            'iconAction'=>'success',
+            'titleAction'=>'Congratulation'
+        ]);
     }
 
     /**
@@ -67,9 +100,29 @@ class ProductController extends Controller
      * @param  \App\Models\product  $product
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, product $product)
+    public function update(Request $request, Product $product)
     {
-        //
+        $validatorRule = [
+            'store_id'=>'required',
+            'nm_product'=>'required',
+            'hrg_product'=>'required',
+        ];
+        $validator = Validator::make($request->all(),$validatorRule);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput($request->input())->with([
+                'stsAction'=> 'Failed to update product',
+                'iconAction'=>'error',
+                'titleAction'=>'Sorry..',
+                'btnAction'=>true
+            ]);
+        }
+        $product->update($request->all());
+        return redirect()->back()->with([
+            'stsAction'=> 'Product has been successfully updated',
+            'iconAction'=>'success',
+            'titleAction'=>'Congratulation'
+        ]);
     }
 
     /**
@@ -78,8 +131,14 @@ class ProductController extends Controller
      * @param  \App\Models\product  $product
      * @return \Illuminate\Http\Response
      */
-    public function destroy(product $product)
+    public function destroy(Product $product)
     {
-        //
+        $name = $product->nm_product;
+        $product->delete();
+        return redirect()->back()->with([
+            'stsAction'=> $name.' has been successfully removed',
+            'iconAction'=>'success',
+            'titleAction'=>'Congratulation'
+        ]);
     }
 }

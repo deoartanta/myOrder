@@ -149,6 +149,7 @@
           </div>
         </section>
       </div>
+      @yield('modal')
     
     <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
     

@@ -17,6 +17,7 @@ class StoreController extends Controller
     {
         $this->middleware('auth');
     }
+    
     public function index()
     {
         $data['stores'] = Store::all()->where('user_id',Auth()->user()->id);
@@ -48,13 +49,21 @@ class StoreController extends Controller
         $validator = Validator::make($request->all(),$validatorRule);
 
         if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput($request->input())->with(['stsAction'=> 'Failed to add store data','iconAction'=>'error','titleAction'=>'Sorry..','btnAction'=>true]);
+            return redirect()->back()->withErrors($validator)->withInput($request->input())->with([
+                'stsAction'=> 'Failed to add store',
+                'iconAction'=>'error',
+                'titleAction'=>'Sorry..',
+                'btnAction'=>true]);
         }
         $data['user_id'] = Auth()->user()->id;
         $data['nm_store'] = $request->input('nm_store');
         $data['address'] = $request->input('address');
         Store::create($data);
-        return redirect()->back()->with(['stsAction'=> 'store data added successfully','iconAction'=>'success','titleAction'=>'Congratulation']);
+        return redirect()->back()->with([
+            'stsAction'=> 'Store added successfully',
+            'iconAction'=>'success',
+            'titleAction'=>'Congratulation'
+        ]);
     }
 
     /**
@@ -95,12 +104,21 @@ class StoreController extends Controller
         $validator = Validator::make($request->all(),$validatorRule);
 
         if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput($request->input())->with(['stsAction'=> 'Failed to update store data','iconAction'=>'error','titleAction'=>'Sorry..','btnAction'=>true]);
+            return redirect()->back()->withErrors($validator)->withInput($request->input())->with([ 
+                'stsAction'=> 'Failed to update store',
+                'iconAction'=>'error',
+                'titleAction'=>'Sorry..',
+                'btnAction'=>true
+            ]);
         }
         $data['nm_store'] = $request->input('nm_store');
         $data['address'] = $request->input('address');
         $store->update($data);
-        return redirect()->back()->with(['stsAction'=> 'Store data has been successfully updated','iconAction'=>'success','titleAction'=>'Congratulation']);
+        return redirect()->back()->with([
+            'stsAction'=> 'Store has been successfully updated',
+            'iconAction'=>'success',
+            'titleAction'=>'Congratulation'
+        ]);
     }
 
     /**
@@ -113,6 +131,10 @@ class StoreController extends Controller
     {
         $name = $store->nm_store;
         $store->delete();
-        return redirect()->back()->with(['stsAction'=> $name.' has been successfully removed','iconAction'=>'success','titleAction'=>'Congratulation']);
+        return redirect()->back()->with([
+            'stsAction'=> $name.' has been successfully removed',
+            'iconAction'=>'success',
+            'titleAction'=>'Congratulation'
+        ]);
     }
 }
