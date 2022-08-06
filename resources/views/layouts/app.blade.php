@@ -114,6 +114,12 @@
                         <li>
                             <a class="nav-link" href="3">
                                 <i class="fas fa-circle-notch fa-lg text-success m-0"></i>
+                                <span>Create Order</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link" href="3">
+                                <i class="fas fa-circle-notch fa-lg text-primary m-0"></i>
                                 <span>List Order</span>
                             </a>
                         </li>
