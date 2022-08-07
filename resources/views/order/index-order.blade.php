@@ -105,7 +105,7 @@
                     <div class="d-flex align-items-center justify-content-end mb-3">
                         <h3 class="">Grand Total</h3>
                         <div class="bg-secondary ms-2 p-2" style="min-width: 15rem;">
-                            <h3 class="text-end">Rp. 0</h3>
+                            <h3 class="text-end hrg_grandtotal">Rp. 0</h3>
                         </div>
                     </div>
                     <div class="table-responsive">
@@ -113,7 +113,6 @@
                             <thead class="bg-secondary">
                                 <tr>
                                     <th>#</th>
-                                    <th>Order Code</th>
                                     <th>Customer</th>
                                     <th>Item</th>
                                     <th>Price</th>
@@ -123,33 +122,23 @@
                             </thead>
                             <tbody>
                                 @isset($orders)
-                                    @foreach ($orders as $val)
+                                @php
+                                     $subtotalorder = 0;
+                                @endphp
+                                    @foreach ($orders->orderdetails as $item)
+                                        @php
+                                            $subtotalorder = $subtotalorder+$item->hrg_total;
+                                        @endphp  
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
-                                            <td>{{ $val->order_cd }}</td>
-                                            <td>{{ $val->orderdetails->first()->nm_customer }}</td>
-                                            <td>{{ $val->orderdetails->first()->product->nm_product }} x<span class="qty-">{{ $val->orderdetails->first()->qty }}</span></td>
-                                            <td>{{ $val->orderdetails->first()->product->hrg_product }}</td>
-                                            <td>{{ sprintf('Rp. %s', number_format($val->orderdetails->first()->hrg_total)) }}</td>
+                                            <td>{{ $item->nm_customer }}</td>
+                                            <td>{{ $item->product->nm_product }} x<span class="qty-">{{ $item->qty }}</span></td>
+                                            <td>{{ sprintf('Rp. %s', number_format($item->hrg_total)) }}</td>
+                                            <td>{{ sprintf('Rp. %s', number_format($item->hrg_total)) }}</td>
                                             <td>
-                                                
+
                                             </td>
                                         </tr>
-                                        @foreach ($val->orderdetails as $item)
-                                            @if ($val->orderdetails->first()->id!=$item->id)    
-                                                <tr>
-                                                    <td></td>
-                                                    <td></td>
-                                                    <td>{{ $item->nm_customer }}</td>
-                                                    <td>{{ $item->product->nm_product }} x<span class="qty-">{{ $item->qty }}</span></td>
-                                                    <td>{{ sprintf('Rp. %s', number_format($item->hrg_total)) }}</td>
-                                                    <td>{{ sprintf('Rp. %s', number_format($item->hrg_total)) }}</td>
-                                                    <td>
-
-                                                    </td>
-                                                </tr>
-                                            @endif
-                                        @endforeach
                                     @endforeach
                                 @endisset
                             </tbody>
@@ -160,15 +149,17 @@
                     <form action="{{ route('order.update', 1) }}" method="post">
                         @csrf
                         @method('PATCH')
+                        <input type="hidden" name="hrg_grandtotal" id="hrg_grandtotal" value="{{ $subtotalorder }}">
+                        {{-- <input type="hidden" id="subtotalorder" value="{{ $subtotalorder }}"> --}}
                         <div class="row justify-content-start">
-                            <div class="col-5">
+                            <div class="col-3">
                                 <div class="row align-items-center my-1">
                                     <div class="col-4 align-self-start">
                                         <label for="discount" class="col-form-label">Discount format<span class="text-danger">*</span></label>
                                     </div>
-                                    <div class="col-6">
-                                        <select class="form-select" id="discountFormat"  >
-                                            <option selected disabled>Choose discount format</option>
+                                    <div class="col-8">
+                                        <select class="form-select mb-3" id="discountFormat"  >
+                                            <option selected disabled>Choose</option>
                                             <option value="1">Presentase(%)</option>
                                             <option value="2">Absolute(Rp. 0)</option>
                                             <option value="0">No discount</option>
@@ -179,24 +170,24 @@
                                     <div class="col-4 align-self-start">
                                         <label for="min" class="col-form-label">Discount<span class="text-danger">*</span></label>
                                     </div>
-                                    <div class="col-6">
+                                    <div class="col-8">
                                         <div class="input-group mb-3">
                                             <span class="input-group-text label-ab">Rp. </span>
-                                            <input type="number" class="form-control text-end" name="discount" id="discount" required value="0">
-                                            <span class="input-group-text label-per ">% </span>
+                                            <input type="number" class="form-control text-end" name="discount" id="discount" required value="0" disabled>
+                                            <span class="input-group-text label-per d-none">%</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-5">
+                            <div class="col-3">
                                 <div class="row align-items-center my-1">
                                     <div class="col-4 align-self-start">
                                         <label for="min" class="col-form-label">Min Purchase<span class="text-danger">*</span></label>
                                     </div>
-                                    <div class="col-6">
+                                    <div class="col-8">
                                         <div class="input-group mb-3">
                                             <span class="input-group-text">Rp. </span>
-                                            <input type="number" name="min" id="min" class="form-control text-end" value="0" required>
+                                            <input type="number" name="min" id="min" class="form-control text-end" value="0" required disabled>
                                         </div>
                                     </div>
                                 </div>
@@ -204,18 +195,44 @@
                                     <div class="col-4 align-self-start">
                                         <label for="max" class="col-form-label">Max Discount <span class="text-danger">*</span></label>
                                     </div>
-                                    <div class="col-6">
+                                    <div class="col-8">
                                         <div class="input-group mb-3">
                                             <span class="input-group-text">Rp. </span>
-                                            <input type="number" class="form-control text-end" id="max" required aria-describedby="helpmin" value="0">
+                                            <input type="number" class="form-control text-end" id="max" required aria-describedby="helpmin" value="0" disabled>
                                         </div>
-                                        <small id="helpmax" class="text-muted"><span class="text-danger">*</span>Jika kosong anda dapat mengisinya dengan 0</small>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-2">
+                            <div class="col-3">
+                                <div class="row align-items-center my-1">
+                                    <div class="col-4 align-self-start">
+                                        <label for="max" class="col-form-label">Sub Total <span class="text-danger">*</span></label>
+                                    </div>
+                                    <div class="col-8">
+                                        <div class="input-group mb-3">
+                                            <span class="input-group-text">Rp. </span>
+                                            <input type="number" class="form-control text-end" id="hrg_subtotal2" required aria-describedby="helpmin" value="{{ $subtotalorder }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="row align-items-center my-1">
+                                    <div class="col-4 align-self-start">
+                                        <label for="dis_total" class="col-form-label">Discount Total<span class="text-danger">*</span></label>
+                                    </div>
+                                    <div class="col-8">
+                                        <div class="input-group mb-3">
+                                            <span class="input-group-text">Rp. </span>
+                                            <input type="number" name="dis_total" id="dis_total" class="form-control text-end" value="0" required>
+                                        </div>
+                                    </div>
+                                </div>
                                 <button type="reset" class="btn btn-secondary mx-1">Cancel</button>
                                 <button type="submit" class="btn btn-primary mx-1">Submit</button>
+                            </div>
+                            <div class="col-6">
+                                <small id="helpmax" class="text-muted"><span class="text-danger">*</span>Jika kosong anda dapat mengisinya dengan angka 0</small>
                             </div>
                         </div>
                     </form>
@@ -296,12 +313,8 @@
             "@endif"
             const submit = [];
             const close = [];
-            $("#qty").focus(function(){
-                var qty = $(this).val();
-                if(!qty||qty<1){
-                    $(this).val(null);
-                }
-            })
+            var grandtotal1 = $("#hrg_subtotal2").val();
+            $(".hrg_grandtotal").html("Rp. "+grandtotal1.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
             $("#qty").focusout(function(){
                 var qty = $(this).val();
                 if(!qty){
@@ -311,6 +324,13 @@
                     $("#subtotal").val("Rp. "+totalhrg.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
                 }
             })
+            $("input[type=number]").focus(function(){
+                var val = $(this).val();
+                if(!val||val<1){
+                    $(this).val(null);
+                }
+            })
+            
             $("#qty").keyup(function(){
                 var val = $("#nmProduct option:selected").text();
                 var val_arr = val.split("@")[1].split(" ")[1].split(",");
@@ -332,6 +352,159 @@
                 var total = $("#qty").val()*hrg;
                 $("#hrg_subtotal").val(hrg);
                 $("#subtotal").val("Rp. "+total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+            });
+
+            $("#discountFormat").change(function(e){
+                var val = $(this).val();
+                if(val==1){
+                    $(".label-per").removeClass("d-none");
+                    $(".label-ab").addClass("d-none");
+                    $("#discount,#max,#min").attr("disabled",false);
+                }else if(val==2){
+                    $(".label-per").addClass("d-none");
+                    $(".label-ab").removeClass("d-none");
+                    $("#discount,#min").attr("disabled",false);
+                    $("#max").attr("disabled",true);
+                }else{
+                    $("#discount,#max,#min").attr("disabled",true);
+                };
+                // $("#subtotal").val("Rp. "+total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+            });
+            $("#discount").keyup(function(){
+                var dis = $(this).val();
+                var min = $("#min").val();
+                // alert(dis);
+                var subtotal = $("#hrg_subtotal2").val();
+                var formatDis = $("#discountFormat").val();
+                var grandtotal = 0;
+                if (dis) {
+                    if (formatDis) {
+                        // alert("true");
+                        if(formatDis==1){
+                            calDis(subtotal,dis,min)
+                        }else{
+                            grandtotal = parseInt(subtotal)-parseInt(dis);
+                            $("#hrg_grandtotal").val(grandtotal);
+                            $(".hrg_grandtotal").text("Rp. "+grandtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                        }
+                    }
+                }else{
+                    $("#hrg_grandtotal").val(subtotal);
+                    $(".hrg_grandtotal").text("Rp. "+subtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                }
+            })
+            function calDis(subtotal,dis,min,max) {
+                var grandtotal = 0;
+                var discount = 0;
+                var formatDis = $("#discountFormat").val();
+                discount = (parseInt(dis)/100)*parseInt(subtotal);
+                if(formatDis==1){
+                    if(discount>=max){
+                        if (max!=0) {
+                            discount = max;
+                        }
+                    }
+                }
+                grandtotal = parseInt(subtotal)-discount;
+                
+                if(parseInt(min)>=subtotal){
+                    $("#hrg_grandtotal").val(subtotal);
+                    $(".hrg_grandtotal").text("Rp. "+subtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                }else{
+                    $("#hrg_grandtotal").val(grandtotal);
+                    $(".hrg_grandtotal").text("Rp. "+grandtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                }
+            }
+            $("input[type=number]").focusout(function(){
+                var dis = $(this).val();
+                if(!dis){
+                    $(this).val(0);
+                }
+            });
+            $("#min").keyup(function(){
+                var max = $("#max").val();
+                var dis = $("#discount").val();
+                var val = $(this).val();
+                var subtotal = $("#hrg_subtotal2").val();
+                if(!val){
+                    val = 0;
+                }
+                if (!max) {
+                    max = 0;
+                }
+                calMin(dis,val,subtotal,max);
+            });
+
+            $("#min").change(function(){
+                var max = $("#max").val();
+                var dis = $("#discount").val();
+                var val = $(this).val();
+                var subtotal = $("#hrg_subtotal2").val();
+                if(!val){
+                    val = 0;
+                }
+                if (!max) {
+                    max = 0;
+                }
+                calMin(dis,val,subtotal,max);
+            });
+
+            function calMin(dis,val,subtotal,max){
+                if(val<=subtotal){
+                    $("#hrg_grandtotal").val(subtotal);
+                    $(".hrg_grandtotal").text("Rp. "+subtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                }else{
+                    calDis(subtotal,dis,val,max);
+                }
+            }
+            $("#max").keyup(function(){
+                var dis = $("#discount").val();
+                var min = $("#min").val();
+                var val = $(this).val();
+                var subtotal = $("#hrg_subtotal2").val();
+                if(!val){
+                    val = 0;
+                }
+                if (!min) {
+                    min = 0;
+                }
+                calDis(subtotal,dis,subtotal,min,val);
+
+            });
+            $("#max").change(function(){
+                var dis = $("#discount").val();
+                var min = $("#min").val();
+                var val = $(this).val();
+                var subtotal = $("#hrg_subtotal2").val();
+                if(!val){
+                    val = 0;
+                }
+                if (!min) {
+                    min = 0;
+                }
+                calDis(subtotal,dis,subtotal,min,val);
+
+            });
+
+            $("#discount").change(function(){
+                var dis = $(this).val();
+                var subtotal = $("#hrg_subtotal2").val();
+                var formatDis = $("#discountFormat").val();
+                var grandtotal = 0;
+                var discount = 0;
+                if (dis) {
+                    if (formatDis) {
+                        if(formatDis==1){
+                            discount = (parseInt(dis)/100)*subtotal;
+                            grandtotal = parseInt(subtotal) - discount;
+                            $("#hrg_grandtotal").val(grandtotal);
+                            $(".hrg_grandtotal").text("Rp. "+grandtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                        }
+                    }
+                }else{
+                    $("#hrg_grandtotal").val(subtotal);
+                            $(".hrg_grandtotal").text("Rp. "+subtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                }
             });
             $("#nmStore").change(function(e){
                 var val = $(this).val();

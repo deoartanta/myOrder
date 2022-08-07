@@ -57,7 +57,7 @@ class OrderController extends Controller
             $id[] += $val->id;
         }
         $data['products'] = Product::all()->whereIn('store_id', $id);
-        $data['orders'] = $order;
+        $data['orders'] = $order->first();
         $data['cd_order'] = strtolower($cd_order);
         return view('order.index-order',$data);
     }
