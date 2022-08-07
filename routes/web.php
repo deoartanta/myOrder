@@ -21,4 +21,6 @@ Route::get('/', function () {
 Auth::routes();
 Route::resource('store', StoreController::class);
 Route::resource('product', ProductController::class);
+Route::resource('order', OrderController::class);
+Route::resource('split-bill', SplitBillController::class);
 Route::get('/dashboard', 'HomeController@index')->name('dashboard');

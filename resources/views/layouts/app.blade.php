@@ -105,26 +105,26 @@
                     </a>
                 </li>
                 <li class="menu-header">Starter</li>
-                <li class="nav-item dropdown">
+                <li class="nav-item dropdown @yield('dropdown-order')">
                     <a href="#" class="nav-link has-dropdown">
                         <i class="fas fa-clipboard-list me-2"></i>
                         <span>Bills</span>
                     </a>
                     <ul class="dropdown-menu">
-                        <li>
-                            <a class="nav-link" href="3">
+                        <li class="@yield('create-order')">
+                            <a class="nav-link" href="{{ route('order.create') }}">
                                 <i class="fas fa-circle-notch fa-lg text-success m-0"></i>
                                 <span>Create Order</span>
                             </a>
                         </li>
                         <li>
-                            <a class="nav-link" href="3">
+                            <a class="nav-link" href="{{ route('order.index') }}">
                                 <i class="fas fa-circle-notch fa-lg text-primary m-0"></i>
                                 <span>List Order</span>
                             </a>
                         </li>
                         <li>
-                            <a class="nav-link" href="#">
+                            <a class="nav-link" href="{{ route('split-bill.create') }}">
                                 <i class="fas fa-circle-notch fa-lg text-warning m-0"></i>
                                 <span>Split Bills</span>
                             </a>

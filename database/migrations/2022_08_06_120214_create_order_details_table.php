@@ -17,6 +17,7 @@ class CreateOrderDetailsTable extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained();
             $table->foreignId('product_id')->constrained();
+            $table->string('nm_customer');
             $table->integer('qty');
             $table->bigInteger('hrg_total');
             $table->timestamps();
