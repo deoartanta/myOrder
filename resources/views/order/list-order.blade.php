@@ -55,7 +55,7 @@
                                                 {{ sprintf('Rp. %s', number_format($val->hrg_grandtotal)) }}
                                             </td>
                                             <td style="min-width: 150px">
-                                                <a href="{{ route('split-bill.create') }}" class=" btn btn-primary mr-1" title="view">
+                                                <a href="{{ route('split-bill.show',$val->order_cd) }}" class=" btn btn-primary mr-1" title="view">
                                                     Split Bill <i class="fas fa-arrow-right"></i>
                                                 </a>
                                             </td>
