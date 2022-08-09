@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Store;
 use App\Models\Product;
+use App\Models\SplitBill;
 use App\Models\OrderDetail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
@@ -23,12 +25,13 @@ class OrderController extends Controller
      */
     public function __construct()
     {
-    $this->middleware('auth');
+        $this->middleware('auth');
     }
 
     public function index()
     {
-
+        $data['orders'] = Order::all()->where('user_id',Auth()->user()->id);
+        return view('order.list-order',$data);
     }
 
     public function create()
@@ -42,9 +45,10 @@ class OrderController extends Controller
                         ->where('user_id',Auth()->user()->id)
                         ->where('hrg_grandtotal',null);
         if($order->count()>1){
-            dd($order);
+            dd($order->count());
         }else if($order->count()==0){
-            $order_id = $order->count()==0?1:$order->last()->id+1;
+            $order_all = Order::all();
+            $order_id = $order_all->count()==0?1:$order_all->last()->id+1;
             $cd_order = $nameSm.date("ymd").$order_id.Auth()->user()->id;
             $cd_order = $nameSm.date("ymd").$order_id.Auth()->user()->id;
         }else{
@@ -86,30 +90,24 @@ class OrderController extends Controller
             $order->order_cd = $request->input('order_cd');
             $order->user_id = Auth()->user()->id;
             $order->item_total = 1;
-            $order->hrg_subtotal = $request->input('hrg_subtotal');
-            // $order->discount = $request->input('discount');
-            // $order->terms_discount = $request->input('terms_discount');
-            // $order->hrg_grandtotal = $request->input('hrg_subtotal');
+            $order->hrg_subtotal = $request->input('hrg_total');
             $order->save();
-            // dd($order->id);
+            
             $data['order_id'] = $order->id ;
             $data['product_id'] = $request->input('product_id');
             $data['nm_customer']= $request->input('nm_customer');
             $data['qty']= $request->input('qty');
-            $data['hrg_total']= $request->input('hrg_subtotal');
+            $data['hrg_total']= $request->input('hrg_total');
             OrderDetail::create($data);
         }else{
             $data['order_id'] = $orderNew->last()->id ;
             $data['product_id'] = $request->input('product_id');
             $data['nm_customer']= $request->input('nm_customer');
             $data['qty']= $request->input('qty');
-            $data['hrg_total']= $request->input('hrg_subtotal');
+            $data['hrg_total']= $request->input('hrg_total');
             OrderDetail::create($data);
         }
         return redirect()->back()->withInput(['nm_customer'=>$request->input('nm_customer')]);
-    }
-    public function updateOrder($data = []){
-
     }
     /**
      * <Order detail table column>
@@ -132,7 +130,69 @@ class OrderController extends Controller
 
     public function update(Request $request, Order $order)
     {
+        $total_discount =0;
+        $form_dis = $request->input('formatDiscount');//Format Discount 1(presentase), 2(absolute)
+        $discount = $request->input('discount');
+        $hrg_subtotal = $request->input('hrg_subtotal');
+        $hrg_grandtotal = $request->input('hrg_grandtotal');
+        $min = $request->input('min');
+        $max = $request->input('max');
+        $ongkir = $request->input('ongkir');
 
+        $discount2 = 0;
+        if ($form_dis==1) {
+            $discount2 = $discount/100;
+            $total_discount = $discount2*$hrg_subtotal;
+            $data['terms_discount'] = 'Pembelian minimal '.sprintf('Rp. %s', number_format($min)).', potongan '.($discount2*100).'%'.' (maksimal '.sprintf('Rp. %s', number_format($max)).')';
+        }else if($form_dis==2){
+            $total_discount = $discount;
+            $data['terms_discount'] = 'Pembelian minimal '.sprintf('Rp. %s', number_format($min)).', potongan '.sprintf('Rp. %s', number_format($total_discount));
+        }else{
+            $total_discount = 0;
+        }
+        $data['hrg_grandtotal'] = $hrg_grandtotal;
+        $data['discount'] = $discount2;
+        $data['item_total'] = $order->orderdetails->count();
+
+        $order->update($data);
+        $data_bils = [];
+        $finish_bills = [];
+        $nm_customer = "";
+        $key_i = -1;
+        foreach ($order->orderdetails as $val) {
+            if($val->nm_customer==$nm_customer){
+                $hrg_total = $data_bils[$key_i]['bill_total'];
+                $item_total = $data_bils[$key_i]['item_total'];
+                $data_bils[$key_i]['bill_total'] = $hrg_total+($val->qty*$val->product->hrg_product);
+                $data_bils[$key_i]['item_total'] = $val->qty+$item_total;
+            }else{
+                $key_i++;
+                $data_bils[$key_i]['order_detail_id'] = $val->id;
+                $data_bils[$key_i]['item_total'] = $val->qty;
+                $data_bils[$key_i]['bill_total'] = $val->qty*$val->product->hrg_product;
+                $data_bils[$key_i]['created_at'] = Carbon::now();
+                $data_bils[$key_i]['updated_at'] = Carbon::now();
+                $nm_customer = $val->nm_customer;
+            }
+        }
+        foreach ($data_bils as $key => $val) {
+            if ($total_discount<=1) {
+                $finish_bills[$key]['bill_total'] = ($val['bill_total']/$hrg_subtotal)*($hrg_grandtotal-$ongkir)+($ongkir/count($data_bils));
+            }else{
+                $finish_bills[$key]['bill_total'] =
+                ($hrg_grandtotal-$ongkir)-($total_discount/count($data_bils))+($ongkir/count($data_bils));
+            }
+
+            $finish_bills[$key]['order_detail_id'] = $val['order_detail_id'];
+            $finish_bills[$key]['created_at'] = $val['created_at'];
+            $finish_bills[$key]['updated_at'] = $val['updated_at'];
+        }
+        SplitBill::insert($finish_bills);
+        return redirect()->back()->with([
+            'stsAction'=> 'order successfully saved',
+            'iconAction'=>'success',
+            'titleAction'=>'Congratulation'
+        ]);
     }
 
     public function destroy(Order $order)

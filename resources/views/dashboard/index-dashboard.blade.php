@@ -52,7 +52,11 @@
                     <h4>Total Order</h4>
                 </div>
                 <div class="card-body">
-                    10
+                    @isset($orders)
+                        {{ $orders->count() }}
+                    @else
+                        0
+                    @endisset
                 </div>
                 </div>
             </div>

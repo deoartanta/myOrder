@@ -87,8 +87,8 @@
                                         <label for="subtotal" class="col-form-label">Sub Total<span class="text-danger">*</span></label>
                                     </div>
                                     <div class="col-6">
-                                        <input type="hidden" name="hrg_subtotal" id="hrg_subtotal" value="0">
-                                        <input type="text"  id="subtotal" class="form-control text-end" value="Rp. 0" required disabled>
+                                        <input type="hidden" name="hrg_total" id="hrg_total_hide" value="0">
+                                        <input type="text"  id="hrg_total" class="form-control text-end" value="Rp. 0" required disabled>
                                     </div>
                                 </div>
                             </div>
@@ -116,7 +116,7 @@
                                     <th>Customer</th>
                                     <th>Item</th>
                                     <th>Price</th>
-                                    <th>Sub Total</th>
+                                    <th>Total</th>
                                     <th>action</th>
                                 </tr>
                             </thead>
@@ -133,24 +133,29 @@
                                             <td>{{ $loop->iteration }}</td>
                                             <td>{{ $item->nm_customer }}</td>
                                             <td>{{ $item->product->nm_product }} x<span class="qty-">{{ $item->qty }}</span></td>
-                                            <td>{{ sprintf('Rp. %s', number_format($item->hrg_total)) }}</td>
+                                            <td>{{ sprintf('Rp. %s', number_format($item->product->hrg_product)) }}</td>
                                             <td>{{ sprintf('Rp. %s', number_format($item->hrg_total)) }}</td>
                                             <td>
 
                                             </td>
                                         </tr>
                                     @endforeach
+                                @else
+                                        <tr>
+                                            <th class="text-center" colspan="6">
+                                                Data not found
+                                            </th>
+                                        </tr>
                                 @endisset
                             </tbody>
                         </table>
                     </div>
                 </div>
                 <div class="card-footer">
-                    <form action="{{ route('order.update', 1) }}" method="post">
+                    <form action="{{ route('order.update',isset($orders)?$orders->id:0) }}" method="post" id="orderFormUpdate">
                         @csrf
                         @method('PATCH')
-                        <input type="hidden" name="hrg_grandtotal" id="hrg_grandtotal" value="{{ $subtotalorder }}">
-                        {{-- <input type="hidden" id="subtotalorder" value="{{ $subtotalorder }}"> --}}
+                        <input type="hidden" name="hrg_grandtotal" id="hrg_grandtotal" value="{{ isset($subtotalorder)?$subtotalorder:0 }}">
                         <div class="row justify-content-start">
                             <div class="col-3">
                                 <div class="row align-items-center my-1">
@@ -158,7 +163,7 @@
                                         <label for="discount" class="col-form-label">Discount format<span class="text-danger">*</span></label>
                                     </div>
                                     <div class="col-8">
-                                        <select class="form-select mb-3" id="discountFormat"  >
+                                        <select class="form-select mb-3" id="discountFormat" name="formatDiscount" >
                                             <option selected disabled>Choose</option>
                                             <option value="1">Presentase(%)</option>
                                             <option value="2">Absolute(Rp. 0)</option>
@@ -198,7 +203,7 @@
                                     <div class="col-8">
                                         <div class="input-group mb-3">
                                             <span class="input-group-text">Rp. </span>
-                                            <input type="number" class="form-control text-end" id="max" required aria-describedby="helpmin" value="0" disabled>
+                                            <input type="number" class="form-control text-end" name="max" id="max" required value="0" disabled>
                                         </div>
                                     </div>
                                 </div>
@@ -206,12 +211,21 @@
                             <div class="col-3">
                                 <div class="row align-items-center my-1">
                                     <div class="col-4 align-self-start">
-                                        <label for="max" class="col-form-label">Sub Total <span class="text-danger">*</span></label>
+                                        <label for="max" class="col-form-label">Sub Total</label>
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="hidden" name="hrg_subtotal" id="hrg_subtotal_hide" value="{{ isset($subtotalorder)?$subtotalorder:0 }}">
+                                        <input type="text" class="form-control text-end" id="hrg_subtotal" required value="{{ sprintf('Rp. %s',number_format(isset($subtotalorder)?$subtotalorder:0)) }}" disabled>
+                                    </div>
+                                </div>
+                                <div class="row align-items-center my-1">
+                                    <div class="col-4 align-self-start">
+                                        <label for="max" class="col-form-label">Ongkir<span class="text-danger">*</span></label>
                                     </div>
                                     <div class="col-8">
                                         <div class="input-group mb-3">
                                             <span class="input-group-text">Rp. </span>
-                                            <input type="number" class="form-control text-end" id="hrg_subtotal2" required aria-describedby="helpmin" value="{{ $subtotalorder }}">
+                                            <input type="number" class="form-control text-end" id="ongkir" name="ongkir" required value="0">
                                         </div>
                                     </div>
                                 </div>
@@ -219,17 +233,14 @@
                             <div class="col-3">
                                 <div class="row align-items-center my-1">
                                     <div class="col-4 align-self-start">
-                                        <label for="dis_total" class="col-form-label">Discount Total<span class="text-danger">*</span></label>
+                                        <label for="dis_total" class="col-form-label">Discount Total</label>
                                     </div>
                                     <div class="col-8">
-                                        <div class="input-group mb-3">
-                                            <span class="input-group-text">Rp. </span>
-                                            <input type="number" name="dis_total" id="dis_total" class="form-control text-end" value="0" required>
-                                        </div>
+                                        <input type="text" name="dis_total" id="dis_total" class="form-control text-end" value="Rp. 0" disabled>
                                     </div>
                                 </div>
                                 <button type="reset" class="btn btn-secondary mx-1">Cancel</button>
-                                <button type="submit" class="btn btn-primary mx-1">Submit</button>
+                                <button type="button" id="btn-submit" class="btn btn-primary mx-1">Submit</button>
                             </div>
                             <div class="col-6">
                                 <small id="helpmax" class="text-muted"><span class="text-danger">*</span>Jika kosong anda dapat mengisinya dengan angka 0</small>
@@ -293,6 +304,8 @@
 @endsection
 @section('script')
     <script>
+        const FORMAT_PRESENTASE = 1;
+        const FORMAT_ABSOLUTE = 2;
         $(document).ready(function(){
             "@if(session('stsAction'))"
                 "@if(session('btnAction'))"
@@ -313,205 +326,185 @@
             "@endif"
             const submit = [];
             const close = [];
-            var grandtotal1 = $("#hrg_subtotal2").val();
+            var grandtotal1 = $("#hrg_subtotal_hide").val();
             $(".hrg_grandtotal").html("Rp. "+grandtotal1.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
-            $("#qty").focusout(function(){
-                var qty = $(this).val();
-                if(!qty){
-                    $(this).val(0);
-                }else{
-                    var totalhrg = $("#hrg_subtotal").val(); 
-                    $("#subtotal").val("Rp. "+totalhrg.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
-                }
-            })
+// -------------------------------------Focus--------------------------------------\\
+            //input Focus
             $("input[type=number]").focus(function(){
                 var val = $(this).val();
                 if(!val||val<1){
                     $(this).val(null);
                 }
-            })
-            
-            $("#qty").keyup(function(){
-                var val = $("#nmProduct option:selected").text();
-                var val_arr = val.split("@")[1].split(" ")[1].split(",");
-                var hrg = parseInt(val_arr[0]+val_arr[1]);
-                $("#hrg_subtotal").val($(this).val()*hrg);
-                $("#subtotal").val($(this).val()*hrg);
-               
-            })
-            $(".btn-edit").click(function(e){
-                var button = $(this);
-                var id = button.data("id");
-                
             });
-            // $('div[class^="store-"]').not('.store-'+val);
-            $("#nmProduct").change(function(e){
-                var val = $(this).find("option:selected").text();
-                var val_arr = val.split("@")[1].split(" ")[1].split(",");
-                var hrg = parseInt(val_arr[0]+val_arr[1]);
-                var total = $("#qty").val()*hrg;
-                $("#hrg_subtotal").val(hrg);
-                $("#subtotal").val("Rp. "+total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+            //input Focus Out
+            $("#qty").focusout(function(){
+                var qty = $(this).val();
+                if(!qty){
+                    $(this).val(0);
+                }
             });
 
-            $("#discountFormat").change(function(e){
-                var val = $(this).val();
-                if(val==1){
-                    $(".label-per").removeClass("d-none");
-                    $(".label-ab").addClass("d-none");
-                    $("#discount,#max,#min").attr("disabled",false);
-                }else if(val==2){
-                    $(".label-per").addClass("d-none");
-                    $(".label-ab").removeClass("d-none");
-                    $("#discount,#min").attr("disabled",false);
-                    $("#max").attr("disabled",true);
-                }else{
-                    $("#discount,#max,#min").attr("disabled",true);
-                };
-                // $("#subtotal").val("Rp. "+total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
-            });
-            $("#discount").keyup(function(){
-                var dis = $(this).val();
-                var min = $("#min").val();
-                // alert(dis);
-                var subtotal = $("#hrg_subtotal2").val();
-                var formatDis = $("#discountFormat").val();
-                var grandtotal = 0;
-                if (dis) {
-                    if (formatDis) {
-                        // alert("true");
-                        if(formatDis==1){
-                            calDis(subtotal,dis,min)
-                        }else{
-                            grandtotal = parseInt(subtotal)-parseInt(dis);
-                            $("#hrg_grandtotal").val(grandtotal);
-                            $(".hrg_grandtotal").text("Rp. "+grandtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
-                        }
-                    }
-                }else{
-                    $("#hrg_grandtotal").val(subtotal);
-                    $(".hrg_grandtotal").text("Rp. "+subtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
-                }
-            })
-            function calDis(subtotal,dis,min,max) {
-                var grandtotal = 0;
-                var discount = 0;
-                var formatDis = $("#discountFormat").val();
-                discount = (parseInt(dis)/100)*parseInt(subtotal);
-                if(formatDis==1){
-                    if(discount>=max){
-                        if (max!=0) {
-                            discount = max;
-                        }
-                    }
-                }
-                grandtotal = parseInt(subtotal)-discount;
-                
-                if(parseInt(min)>=subtotal){
-                    $("#hrg_grandtotal").val(subtotal);
-                    $(".hrg_grandtotal").text("Rp. "+subtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
-                }else{
-                    $("#hrg_grandtotal").val(grandtotal);
-                    $(".hrg_grandtotal").text("Rp. "+grandtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
-                }
-            }
             $("input[type=number]").focusout(function(){
                 var dis = $(this).val();
                 if(!dis){
                     $(this).val(0);
                 }
             });
+            // input Key Up
+            $("#qty").keyup(function(){
+                var hrg = getHrg($("#nmProduct"));
+                var hrg_total = $(this).val()*hrg;
+                $("#hrg_total_hide").val(hrg_total);
+                $("#hrg_total").val("Rp. "+hrg_total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+               
+            });
+
+            $("#discount").keyup(function(){
+                $("#min").keyup();
+            })
+
             $("#min").keyup(function(){
-                var max = $("#max").val();
-                var dis = $("#discount").val();
-                var val = $(this).val();
-                var subtotal = $("#hrg_subtotal2").val();
-                if(!val){
-                    val = 0;
+                var max = parseInt($("#max").val());
+                var min = parseInt($(this).val());
+
+                var val_dis = parseInt($("#discount").val());
+                var subtotal = $("#hrg_subtotal_hide").val();
+                var format = $("#discountFormat").val();
+                var ongkir = parseInt($("#ongkir").val());
+
+                var discount = caldiscount($("#discount"),format);
+                var grandtotal = parseInt(subtotal) - discount;
+                // console.log();
+                if(!min){
+                    min = 0;
                 }
                 if (!max) {
                     max = 0;
                 }
-                calMin(dis,val,subtotal,max);
+                if(ongkir){
+                    grandtotal += ongkir;
+                }else{
+                    ongkir = 0;
+                }
+                console.log("Min ="+min+" Max ="+max+" Ongkir"+ongkir);
+                if (parseInt(format)==FORMAT_PRESENTASE) {
+                    if (min==0||subtotal>=min) {
+                        // console.log("Format presentase subtotal ="+discount+" Min ="+min+" subtotal ="+subtotal);
+                        if (max==0||(max>=discount)) {
+                            console.log("min = "+min+" Grand Total ="+grandtotal);
+                            $("#hrg_grandtotal").val(grandtotal);
+                            $("#dis_total").val("Rp. "+discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                            $(".hrg_grandtotal").text("Rp. "+grandtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                        }else{
+                            discount = max;
+                            grandtotal = parseInt(subtotal) - discount;
+                            // console.log("max = "+max+" Grand Total ="+grandtotal);
+                            $("#hrg_grandtotal").val(grandtotal);
+                            $("#dis_total").val("Rp. "+discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                            $(".hrg_grandtotal").text("Rp. "+grandtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                        }
+                    }else{
+                        $("#hrg_grandtotal").val(grandtotal);
+                        $("#dis_total").val("Rp. 0");
+                        $(".hrg_grandtotal").text("Rp. "+subtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                    }
+                }else if(parseInt(format)==FORMAT_ABSOLUTE){
+                    if (subtotal>=min) {
+                        console.log("Format Absolute subtotal ="+discount+" Min ="+min+" subtotal ="+subtotal);
+                        $("#hrg_grandtotal").val(grandtotal);
+                        $("#dis_total").val("Rp. "+discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                        $(".hrg_grandtotal").text("Rp. "+grandtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                    }else{
+                        $("#hrg_grandtotal").val(subtotal);
+                        $("#dis_total").val("Rp. 0");
+                        $(".hrg_grandtotal").text("Rp. "+subtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                    }
+                }
+                
+            });
+
+            $("#max").keyup(function(){
+                $("#min").keyup();
+            });
+            $("#ongkir").keyup(function(){
+                $("#min").keyup();
             });
 
             $("#min").change(function(){
-                var max = $("#max").val();
-                var dis = $("#discount").val();
-                var val = $(this).val();
-                var subtotal = $("#hrg_subtotal2").val();
-                if(!val){
-                    val = 0;
-                }
-                if (!max) {
-                    max = 0;
-                }
-                calMin(dis,val,subtotal,max);
+                $("#min").keyup();
             });
 
-            function calMin(dis,val,subtotal,max){
-                if(val<=subtotal){
-                    $("#hrg_grandtotal").val(subtotal);
-                    $(".hrg_grandtotal").text("Rp. "+subtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
-                }else{
-                    calDis(subtotal,dis,val,max);
-                }
-            }
-            $("#max").keyup(function(){
-                var dis = $("#discount").val();
-                var min = $("#min").val();
-                var val = $(this).val();
-                var subtotal = $("#hrg_subtotal2").val();
-                if(!val){
-                    val = 0;
-                }
-                if (!min) {
-                    min = 0;
-                }
-                calDis(subtotal,dis,subtotal,min,val);
-
-            });
             $("#max").change(function(){
-                var dis = $("#discount").val();
-                var min = $("#min").val();
-                var val = $(this).val();
-                var subtotal = $("#hrg_subtotal2").val();
-                if(!val){
-                    val = 0;
-                }
-                if (!min) {
-                    min = 0;
-                }
-                calDis(subtotal,dis,subtotal,min,val);
-
+                $("#min").keyup();
+            });
+            
+            $("#ongkir").change(function(){
+                $("#min").keyup();
             });
 
-            $("#discount").change(function(){
-                var dis = $(this).val();
-                var subtotal = $("#hrg_subtotal2").val();
-                var formatDis = $("#discountFormat").val();
-                var grandtotal = 0;
-                var discount = 0;
-                if (dis) {
-                    if (formatDis) {
-                        if(formatDis==1){
-                            discount = (parseInt(dis)/100)*subtotal;
-                            grandtotal = parseInt(subtotal) - discount;
-                            $("#hrg_grandtotal").val(grandtotal);
-                            $(".hrg_grandtotal").text("Rp. "+grandtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
-                        }
-                    }
-                }else{
-                    $("#hrg_grandtotal").val(subtotal);
-                            $(".hrg_grandtotal").text("Rp. "+subtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
-                }
-            });
+            // $('div[class^="store-"]').not('.store-'+val);
+            //Selected Change
             $("#nmStore").change(function(e){
                 var val = $(this).val();
                 var no = 1;
                 $("option[class^='store-']").not('.store-'+val).hide();
                 $("option.store-"+val).show();
                 $("#nmProduct").attr("disabled",false);
+            });
+
+            $("#nmProduct").change(function(e){
+                var hrg = getHrg($(this));
+                var total = $("#qty").val()*hrg;
+                $("#hrg_total_hide").val(hrg);
+                $("#hrg_total").val("Rp. "+total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+            });
+
+            $("#discount").change(function(){
+                $("#min").keyup();
+            });
+
+            $("#discountFormat").change(function(e){
+                var val = $(this).val();
+                $("#discount").val(0);
+                if(parseInt(val)==FORMAT_PRESENTASE){
+                    $(".label-per").removeClass("d-none");
+                    $(".label-ab").addClass("d-none");
+                    $("#discount,#max,#min").attr("disabled",false);
+                    $("#discount").attr("max",100);
+                }else if(parseInt(val)==FORMAT_ABSOLUTE){
+                    $(".label-per").addClass("d-none");
+                    $(".label-ab").removeClass("d-none");
+                    $("#discount,#min").attr("disabled",false);
+                    $("#max").attr("disabled",true);
+                    $("#discount").removeattr("max");
+                }else{
+                    $("#discount,#max,#min").attr("disabled",true);
+                };
+                // $("#subtotal").val("Rp. "+total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+            });
+
+            //Btn Click
+            $(".btn-edit").click(function(e){
+                var button = $(this);
+                var id = button.data("id");
+                
+            });
+
+            $("#btn-submit").click(function(e){
+                var form = $("#orderFormUpdate");
+                Swal.fire({
+                    title: 'Confirm',
+                    text: "Data will be saved soon, want to continue?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, continue!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
             });
             $(".btn-hps").click(function(e){
                 var button = $(this);
@@ -534,6 +527,7 @@
                     }
                 });
             });
+// -------------------------------------Modal--------------------------------------\\
             $("#editProduct").on("show.bs.modal",function(e){
                 var button = $(e.relatedTarget);
                 var href = button.data("href");
@@ -549,6 +543,15 @@
 
             });
         });
+        
+// ------------------------------------Function------------------------------------\\
+        function getHrg(_thisOption){
+            var val = _thisOption.find("option:selected").text();
+            var val_arr = val.split("@")[1].split(" ")[1].split(",");
+            var hrg = parseInt(val_arr[0]+val_arr[1]);
+            return hrg;
+        }
+
         function showAlertNotBtn(msg, icon, title) {
             Swal.fire({
                 icon: icon,
@@ -559,6 +562,7 @@
                 showConfirmButton: false
             });
         };
+
         function showAlert(msg, icon, title,btnConfirm) {
             if (btnConfirm) {
                 Swal.fire({
@@ -572,5 +576,26 @@
                 showAlertNotBtn(msg, icon, title);
             }
         };
+
+        //Calculate Discount
+        function caldiscount(_this,formatDiscount){
+            var val_dis = _this.val();
+            var subtotal = $("#hrg_subtotal_hide").val();
+            if (val_dis) {
+                if(parseInt(formatDiscount)==FORMAT_PRESENTASE){
+                    if(val_dis>100){
+                        val_dis = 100;
+                        _this.val(val_dis);
+                    }
+                    discount = (parseInt(val_dis)/100)*subtotal;
+                    return discount;
+                }else if (parseInt(formatDiscount)==FORMAT_ABSOLUTE) {
+                    discount = parseInt(val_dis);
+                    return discount;
+                }
+            }else{
+                return 0;
+            }
+        }
     </script>
 @endsection

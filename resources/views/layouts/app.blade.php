@@ -7,7 +7,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title')|{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Laravel') }} | @yield('title')</title>
 
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
@@ -117,13 +117,13 @@
                                 <span>Create Order</span>
                             </a>
                         </li>
-                        <li>
+                        <li class="@yield('list-order')">
                             <a class="nav-link" href="{{ route('order.index') }}">
                                 <i class="fas fa-circle-notch fa-lg text-primary m-0"></i>
                                 <span>List Order</span>
                             </a>
                         </li>
-                        <li>
+                        <li class="@yield('split-bill')">
                             <a class="nav-link" href="{{ route('split-bill.create') }}">
                                 <i class="fas fa-circle-notch fa-lg text-warning m-0"></i>
                                 <span>Split Bills</span>

@@ -11,6 +11,6 @@ class SplitBill extends Model
     protected $guarded = ['id'];
 
     public function orderdetail(){
-        return $this->belongsTo(OrderDetail::class);
+        return $this->belongsTo(OrderDetail::class,'order_detail_id');
     }
 }
