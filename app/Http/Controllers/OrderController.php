@@ -151,6 +151,7 @@ class OrderController extends Controller
             $total_discount = 0;
         }
         $data['hrg_grandtotal'] = $hrg_grandtotal;
+        $data['hrg_subtotal'] = $hrg_subtotal;
         $data['discount'] = $discount2;
         $data['item_total'] = $order->orderdetails->count();
 
@@ -159,7 +160,7 @@ class OrderController extends Controller
         $finish_bills = [];
         $nm_customer = "";
         $key_i = -1;
-        foreach ($order->orderdetails as $val) {
+        foreach ($order->orderdetails->sortBy('nm_customer') as $val) {
             if($val->nm_customer==$nm_customer){
                 $hrg_total = $data_bils[$key_i]['bill_total'];
                 $item_total = $data_bils[$key_i]['item_total'];

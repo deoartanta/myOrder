@@ -126,7 +126,7 @@
                                         $subtotalorder = 0;
                                     @endphp
                                     @if($orders->orderdetails->count()!=0)
-                                        @foreach ($orders->orderdetails as $item)
+                                        @foreach ($orders->orderdetails->sortBy('nm_customer') as $item)
                                             @php
                                                 $subtotalorder = $subtotalorder+$item->hrg_total;
                                             @endphp  
