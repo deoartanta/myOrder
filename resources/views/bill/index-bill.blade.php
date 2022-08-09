@@ -156,7 +156,7 @@
                                                 {{ $val->orderdetail->nm_customer }}
                                             </td>
                                             <td>
-                                                {{-- {{ $val->qty }} Item --}}
+                                                {{ $val->item_total }} Item
                                             </td>
                                             <td>
                                                 {{ sprintf('Rp. %s', number_format($val->bill_total)) }}
