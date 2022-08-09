@@ -16,6 +16,7 @@ class CreateSplitBillsTable extends Migration
         Schema::create('split_bills', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_detail_id')->constrained();
+            $table->integer('item_total');
             $table->bigInteger('bill_total')->nullable();
             $table->timestamps();
         });

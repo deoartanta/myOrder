@@ -44,14 +44,16 @@ class SplitBillController extends Controller
         $nm_customer = "";
         $key_i = -1;
         $id = [];
-        foreach ($data['order']->orderdetails as $val) {
-            if($val->nm_customer!=$nm_customer){
-                $id[] += $val->id;
-                $nm_customer = $val->nm_customer;
+        if ($data['order']) {
+            foreach ($data['order']->orderdetails as $val) {
+                if($val->nm_customer!=$nm_customer){
+                    $id[] += $val->id;
+                    $nm_customer = $val->nm_customer;
+                }
             }
-        }
         $data['bills'] = SplitBill::all()->whereIn('order_detail_id', $id);
         $data['updated_at'] = Carbon::parse($data['order']->updated_at)->format('Y-m-d');
+        }
         return view('bill.index-bill',$data);
     }
 

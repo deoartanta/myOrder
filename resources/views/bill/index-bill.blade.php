@@ -65,109 +65,110 @@
             </div>
             </div>
         </div>
-
-        <div class="col-12">
-            <div class="card">
-            <div class="card-header">
-                <h4>Split Bill</h4>
-            </div>
-            <div class="card-body p-0">
-                <div class="row add-action m-3">
-                    <div class="col-6">
-                        <div class="row align-items-center my-3">
-                            <div class="col-3 align-self-start">
-                                <label for="order_cd" class="col-form-label">Order Code</label>
+        @isset($bills)
+            <div class="col-12">
+                <div class="card">
+                <div class="card-header">
+                    <h4>Split Bill</h4>
+                </div>
+                <div class="card-body p-0">
+                    <div class="row add-action m-3">
+                        <div class="col-6">
+                            <div class="row align-items-center my-3">
+                                <div class="col-3 align-self-start">
+                                    <label for="order_cd" class="col-form-label">Order Code</label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="text" name="order_cd" id="order_cd" class="form-control" value="{{ $order->order_cd }}" aria-describedby="helpOrdercd" readonly>
+                                </div>
                             </div>
-                            <div class="col-6">
-                                <input type="text" name="order_cd" id="order_cd" class="form-control" value="{{ $order->order_cd }}" aria-describedby="helpOrdercd" readonly>
+                            <div class="row align-items-center my-3">
+                                <div class="col-3 align-self-start">
+                                    <label for="dateNow" class="col-form-label">Date</label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="date" id="dateNow" class="form-control" value="{{ $updated_at }}" aria-describedby="helpOrdercd" readonly>
+                                </div>
+                            </div>
+                            <div class="row align-items-center my-3">
+                                <div class="col-3 align-self-start">
+                                    <label for="dateNow" class="col-form-label">Used Discount</label>
+                                </div>
+                                <div class="col-6">
+                                    <p id="my-textarea" class="form-control-plaintext">{{ $order->terms_discount }}</p>
+                                </div>
                             </div>
                         </div>
-                        <div class="row align-items-center my-3">
-                            <div class="col-3 align-self-start">
-                                <label for="dateNow" class="col-form-label">Date</label>
+                        <div class="col-6">
+                            <div class="row align-items-center my-3">
+                                <div class="col-3 align-self-start">
+                                    <label for="order_cd" class="col-form-label">Total Item</label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="text" name="order_cd" id="order_cd" class="form-control" value="{{ $order->item_total }} Item" aria-describedby="helpOrdercd" readonly>
+                                </div>
                             </div>
-                            <div class="col-6">
-                                <input type="date" id="dateNow" class="form-control" value="{{ $updated_at }}" aria-describedby="helpOrdercd" readonly>
+                            <div class="row align-items-center my-3">
+                                <div class="col-3 align-self-start">
+                                    <label for="subtotalshow" class="col-form-label">Sub Total</label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="text" id="subtotalshow" class="form-control" value="{{ sprintf('Rp. %s', number_format($val->hrg_subtotal)) }}" aria-describedby="helpOrdercd" readonly>
+                                </div>
                             </div>
-                        </div>
-                        <div class="row align-items-center my-3">
-                            <div class="col-3 align-self-start">
-                                <label for="dateNow" class="col-form-label">Used Discount</label>
-                            </div>
-                            <div class="col-6">
-                                <p id="my-textarea" class="form-control-plaintext">{{ $order->terms_discount }}</p>
+                            <div class="row align-items-center my-3">
+                                <div class="col-3 align-self-start">
+                                    <label for="gradtotalshow" class="col-form-label">Grand Total</label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="text" id="gradtotalshow" class="form-control" value="{{ sprintf('Rp. %s', number_format($val->hrg_grandtotal)) }}" aria-describedby="helpOrdercd" readonly>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-6">
-                        <div class="row align-items-center my-3">
-                            <div class="col-3 align-self-start">
-                                <label for="order_cd" class="col-form-label">Total Item</label>
-                            </div>
-                            <div class="col-6">
-                                <input type="text" name="order_cd" id="order_cd" class="form-control" value="{{ $order->item_total }} Item" aria-describedby="helpOrdercd" readonly>
-                            </div>
-                        </div>
-                        <div class="row align-items-center my-3">
-                            <div class="col-3 align-self-start">
-                                <label for="subtotalshow" class="col-form-label">Sub Total</label>
-                            </div>
-                            <div class="col-6">
-                                <input type="text" id="subtotalshow" class="form-control" value="{{ sprintf('Rp. %s', number_format($val->hrg_subtotal)) }}" aria-describedby="helpOrdercd" readonly>
-                            </div>
-                        </div>
-                        <div class="row align-items-center my-3">
-                            <div class="col-3 align-self-start">
-                                <label for="gradtotalshow" class="col-form-label">Grand Total</label>
-                            </div>
-                            <div class="col-6">
-                                <input type="text" id="gradtotalshow" class="form-control" value="{{ sprintf('Rp. %s', number_format($val->hrg_grandtotal)) }}" aria-describedby="helpOrdercd" readonly>
-                            </div>
-                        </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th class="text-uppercase">Name customer</th>
+                                <th class="text-uppercase">Total Item</th>
+                                <th class="text-uppercase">Split bill</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                @isset($order)
+                                    @php
+                                        $nm_customer = "";
+                                        $key_i = -1;
+                                        $qty = 0;
+                                    @endphp     
+                                    @foreach ($bills as $val)
+                                        <tr>
+                                            <td class="no">{{ $loop->iteration }}</td>
+                                            <td>
+                                                {{ $val->orderdetail->nm_customer }}
+                                            </td>
+                                            <td>
+                                                {{-- {{ $val->qty }} Item --}}
+                                            </td>
+                                            <td>
+                                                {{ sprintf('Rp. %s', number_format($val->bill_total)) }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                        <tr>
+                                            <td colspan="7" class="text-center"> Data not found</td>
+                                        </tr>
+                                @endisset
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover mb-0">
-                        <thead>
-                        <tr>
-                            <th>#</th>
-                            <th class="text-uppercase">Name customer</th>
-                            <th class="text-uppercase">Total Item</th>
-                            <th class="text-uppercase">Split bill</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                            @isset($order)
-                                @php
-                                    $nm_customer = "";
-                                    $key_i = -1;
-                                    $qty = 0;
-                                @endphp     
-                                @foreach ($bills as $val)
-                                    <tr>
-                                        <td class="no">{{ $loop->iteration }}</td>
-                                        <td>
-                                            {{ $val->orderdetail->nm_customer }}
-                                        </td>
-                                        <td>
-                                            {{-- {{ $val->qty }} Item --}}
-                                        </td>
-                                        <td>
-                                            {{ sprintf('Rp. %s', number_format($val->bill_total)) }}
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            @else
-                                    <tr>
-                                        <td colspan="7" class="text-center"> Data not found</td>
-                                    </tr>
-                            @endisset
-                        </tbody>
-                    </table>
                 </div>
             </div>
-            </div>
-        </div>
+        @endisset
     </div>
     <form action="" method="post" id="form-delete">
         @method("DELETE")

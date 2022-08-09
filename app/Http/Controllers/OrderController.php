@@ -176,7 +176,7 @@ class OrderController extends Controller
             }
         }
         foreach ($data_bils as $key => $val) {
-            if ($total_discount<=1) {
+            if ($discount2<=1) {
                 $finish_bills[$key]['bill_total'] = ($val['bill_total']/$hrg_subtotal)*($hrg_grandtotal-$ongkir)+($ongkir/count($data_bils));
             }else{
                 $finish_bills[$key]['bill_total'] =
@@ -184,9 +184,12 @@ class OrderController extends Controller
             }
 
             $finish_bills[$key]['order_detail_id'] = $val['order_detail_id'];
+            $finish_bills[$key]['item_total'] = $val['item_total'];
             $finish_bills[$key]['created_at'] = $val['created_at'];
             $finish_bills[$key]['updated_at'] = $val['updated_at'];
         }
+        // dd($data_bils);
+        // dd($finish_bills);
         SplitBill::insert($finish_bills);
         return redirect()->back()->with([
             'stsAction'=> 'order successfully saved',
