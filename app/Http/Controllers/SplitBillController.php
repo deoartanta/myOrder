@@ -27,7 +27,7 @@ class SplitBillController extends Controller
 
     public function create()
     {
-        $data['orders'] = Order::all()->where('user_id',Auth()->user()->id);
+        $data['orders'] = Order::all()->where('user_id',Auth()->user()->id)->where('hrg_grandtotal','<>',null);
         return view('bill.index-bill',$data);
     }
 
@@ -39,8 +39,8 @@ class SplitBillController extends Controller
     public function show($id)
     {
 
-        $data['orders'] = Order::all()->where('user_id',Auth()->user()->id);
-        $data['order'] = $data['orders']->where('order_cd',$id)->first();
+        $data['orders'] = Order::all()->where('user_id',Auth()->user()->id)->where('hrg_grandtotal','<>',null);
+        $data['order'] = $data['orders']->where('order_cd',$id)->where('hrg_grandtotal','<>',null)->first();
         $nm_customer = "";
         $key_i = -1;
         $id = [];

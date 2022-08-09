@@ -122,24 +122,32 @@
                             </thead>
                             <tbody>
                                 @isset($orders)
-                                @php
-                                     $subtotalorder = 0;
-                                @endphp
-                                    @foreach ($orders->orderdetails as $item)
-                                        @php
-                                            $subtotalorder = $subtotalorder+$item->hrg_total;
-                                        @endphp  
+                                    @php
+                                        $subtotalorder = 0;
+                                    @endphp
+                                    @if($orders->orderdetails->count()!=0)
+                                        @foreach ($orders->orderdetails as $item)
+                                            @php
+                                                $subtotalorder = $subtotalorder+$item->hrg_total;
+                                            @endphp  
+                                            <tr>
+                                                <td>{{ $loop->iteration }}</td>
+                                                <td>{{ $item->nm_customer }}</td>
+                                                <td>{{ $item->product->nm_product }} x<span class="qty-">{{ $item->qty }}</span></td>
+                                                <td>{{ sprintf('Rp. %s', number_format($item->product->hrg_product)) }}</td>
+                                                <td>{{ sprintf('Rp. %s', number_format($item->hrg_total)) }}</td>
+                                                <td>
+                                                    <button type="button" class=" btn btn-danger btn-action btn-hps" title="Delete" data-id="{{ $item->id }}" data-name="{{ $item->nm_customer }}" data-href="{{ route('order.destroy',$item->id) }}"><i class="fas fa-trash"></i> Delete</button>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    @else
                                         <tr>
-                                            <td>{{ $loop->iteration }}</td>
-                                            <td>{{ $item->nm_customer }}</td>
-                                            <td>{{ $item->product->nm_product }} x<span class="qty-">{{ $item->qty }}</span></td>
-                                            <td>{{ sprintf('Rp. %s', number_format($item->product->hrg_product)) }}</td>
-                                            <td>{{ sprintf('Rp. %s', number_format($item->hrg_total)) }}</td>
-                                            <td>
-
-                                            </td>
+                                            <th class="text-center" colspan="6">
+                                                Data not found
+                                            </th>
                                         </tr>
-                                    @endforeach
+                                    @endif
                                 @else
                                         <tr>
                                             <th class="text-center" colspan="6">
@@ -514,7 +522,7 @@
                 var form = $("#form-delete");
                 Swal.fire({
                     title: 'Are you sure?',
-                    text: name+" will be deleted soon, you may not be able to restore it!, want to continue?",
+                    text: "Orders from "+name+" will be deleted soon, you may not be able to restore it!, want to continue?",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',

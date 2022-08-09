@@ -27,33 +27,39 @@
                         </thead>
                         <tbody>
                             @isset($orders)
-                                @foreach ($orders as $val)
+                                @if ($orders->count()!=0)
+                                    @foreach ($orders as $val)
+                                        <tr>
+                                            <td class="no">{{ $loop->iteration }}</td>
+                                            <td>
+                                                <div class="content-table-{{ $val->id }}">
+                                                    {{ $val->order_cd }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {{ $val->item_total }} Item
+                                            </td>
+                                            <td>
+                                                {{ sprintf('Rp. %s', number_format($val->hrg_subtotal)) }}
+                                            </td>
+                                            <td>
+                                                {{ $val->terms_discount	 }}
+                                            </td>
+                                            <td>
+                                                {{ sprintf('Rp. %s', number_format($val->hrg_grandtotal)) }}
+                                            </td>
+                                            <td style="min-width: 150px">
+                                                <a href="{{ route('split-bill.show',$val->order_cd) }}" class=" btn btn-primary mr-1" title="Calculate">
+                                                    Split Bill <i class="fas fa-arrow-right"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @else
                                     <tr>
-                                        <td class="no">{{ $loop->iteration }}</td>
-                                        <td>
-                                            <div class="content-table-{{ $val->id }}">
-                                                {{ $val->order_cd }}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            {{ $val->item_total }} Item
-                                        </td>
-                                        <td>
-                                            {{ sprintf('Rp. %s', number_format($val->hrg_subtotal)) }}
-                                        </td>
-                                        <td>
-                                            {{ $val->terms_discount	 }}
-                                        </td>
-                                        <td>
-                                            {{ sprintf('Rp. %s', number_format($val->hrg_grandtotal)) }}
-                                        </td>
-                                        <td style="min-width: 150px">
-                                            <a href="{{ route('split-bill.show',$val->order_cd) }}" class=" btn btn-primary mr-1" title="Calculate">
-                                                Split Bill <i class="fas fa-arrow-right"></i>
-                                            </a>
-                                        </td>
+                                        <td colspan="7" class="text-center"> Data not found</td>
                                     </tr>
-                                @endforeach
+                                @endif
                             @else
                                     <tr>
                                         <td colspan="7" class="text-center"> Data not found</td>

@@ -30,7 +30,7 @@ class OrderController extends Controller
 
     public function index()
     {
-        $data['orders'] = Order::all()->where('user_id',Auth()->user()->id);
+        $data['orders'] = Order::all()->where('user_id',Auth()->user()->id)->where('hrg_grandtotal','<>',null);
         return view('order.list-order',$data);
     }
 
@@ -198,8 +198,15 @@ class OrderController extends Controller
         ]);
     }
 
-    public function destroy(Order $order)
+    public function destroy($id)
     {
-
+        $orderdetail = OrderDetail::findOrFail($id);
+        $name = $orderdetail->nm_customer;
+        $orderdetail->delete();
+        return redirect()->back()->with([
+            'stsAction'=> $name.' has been successfully removed',
+            'iconAction'=>'success',
+            'titleAction'=>'Congratulation'
+        ]);
     }
 }
