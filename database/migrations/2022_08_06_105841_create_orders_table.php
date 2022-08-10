@@ -19,6 +19,7 @@ class CreateOrdersTable extends Migration
             $table->foreignId('user_id')->constrained();
             $table->integer('item_total');
             $table->bigInteger('hrg_subtotal');
+            $table->integer('ongkir')->nullable();
             $table->string('discount')->nullable();
             $table->text('terms_discount')->nullable();
             $table->bigInteger('hrg_grandtotal')->nullable();

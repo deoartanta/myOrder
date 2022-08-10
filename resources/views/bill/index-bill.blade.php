@@ -20,6 +20,7 @@
                             <th class="text-uppercase">ID ORDER</th>
                             <th class="text-uppercase">Total Item</th>
                             <th class="text-uppercase">Sub Total</th>
+                            <th class="text-uppercase">Ongkir</th>
                             <th class="text-uppercase">used discount</th>
                             <th class="text-uppercase">grand total</th>
                             <th></th>
@@ -41,6 +42,9 @@
                                             </td>
                                             <td>
                                                 {{ sprintf('Rp. %s', number_format($val->hrg_subtotal)) }}
+                                            </td>
+                                            <td>
+                                                {{ sprintf('Rp. %s', number_format($val->ongkir)) }}
                                             </td>
                                             <td>
                                                 {{ $val->terms_discount	 }}

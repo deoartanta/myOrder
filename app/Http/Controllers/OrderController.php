@@ -162,6 +162,7 @@ class OrderController extends Controller
         }
         $data['hrg_grandtotal'] = $hrg_grandtotal;
         $data['hrg_subtotal'] = $hrg_subtotal;
+        $data['ongkir'] = $ongkir;
         $data['discount'] = $total_discount;
         $data['item_total'] = 0;
         foreach ($order->orderdetails as $val) {
