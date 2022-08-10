@@ -314,6 +314,7 @@
     <script>
         const FORMAT_PRESENTASE = 1;
         const FORMAT_ABSOLUTE = 2;
+        const FORMAT_NOT_USED = 0;
         $(document).ready(function(){
             "@if(session('stsAction'))"
                 "@if(session('btnAction'))"
@@ -394,12 +395,12 @@
                 }else{
                     ongkir = 0;
                 }
-                console.log("Min ="+min+" Max ="+max+" Ongkir"+ongkir);
+                // console.log("Min ="+min+" Max ="+max+" Ongkir"+ongkir);
                 if (parseInt(format)==FORMAT_PRESENTASE) {
                     if (min==0||subtotal>=min) {
                         // console.log("Format presentase subtotal ="+discount+" Min ="+min+" subtotal ="+subtotal);
                         if (max==0||(max>=discount)) {
-                            console.log("min = "+min+" Grand Total ="+grandtotal);
+                            // console.log("min = "+min+" Grand Total ="+grandtotal);
                             $("#hrg_grandtotal").val(grandtotal);
                             $("#dis_total").val("Rp. "+discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
                             $(".hrg_grandtotal").text("Rp. "+grandtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
@@ -435,7 +436,27 @@
                 $("#min").keyup();
             });
             $("#ongkir").keyup(function(){
-                $("#min").keyup();
+                var min = parseInt($("#min").val());
+                var ongkir = parseInt($(this).val());
+                var format_disc = $("#discountFormat").val();
+                var subtotal = parseInt($("#hrg_subtotal_hide").val());
+                if (format_disc&&format_disc!=FORMAT_NOT_USED) {
+                    if (min<=subtotal) {
+                        $("#min").keyup();
+                    }else{
+                        if(ongkir){
+                            subtotal += ongkir;
+                        }
+                        $("#hrg_grandtotal").val(subtotal);
+                        $(".hrg_grandtotal").text("Rp. "+subtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                    }
+                }else{
+                    if(ongkir){
+                        subtotal += ongkir;
+                    }
+                    $("#hrg_grandtotal").val(subtotal);
+                    $(".hrg_grandtotal").text("Rp. "+subtotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                }
             });
 
             $("#min").change(function(){
@@ -447,7 +468,7 @@
             });
             
             $("#ongkir").change(function(){
-                $("#min").keyup();
+                $(this).keyup();
             });
 
             // $('div[class^="store-"]').not('.store-'+val);

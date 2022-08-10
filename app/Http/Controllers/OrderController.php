@@ -138,50 +138,68 @@ class OrderController extends Controller
         $min = $request->input('min');
         $max = $request->input('max');
         $ongkir = $request->input('ongkir');
+        $used_discount = false;
 
         $discount2 = 0;
-        if ($form_dis==1) {
-            $discount2 = $discount/100;
-            $total_discount = $discount2*$hrg_subtotal;
-            $data['terms_discount'] = 'Pembelian minimal '.sprintf('Rp. %s', number_format($min)).', potongan '.($discount2*100).'%'.' (maksimal '.sprintf('Rp. %s', number_format($max)).')';
-        }else if($form_dis==2){
-            $total_discount = $discount;
-            $data['terms_discount'] = 'Pembelian minimal '.sprintf('Rp. %s', number_format($min)).', potongan '.sprintf('Rp. %s', number_format($total_discount));
+        if($min<=$hrg_subtotal){
+            if ($form_dis==1) {
+                $used_discount = true;
+                $discount2 = $discount/100;
+                $total_discount = $discount2*$hrg_subtotal;
+                $data['terms_discount'] = 'Pembelian minimal '.sprintf('Rp. %s', number_format($min)).', potongan '.($discount2*100).'%'.' (maksimal '.sprintf('Rp. %s', number_format($max)).')';
+            }else if($form_dis==2){
+                $used_discount = true;
+                $total_discount = $discount;
+                $data['terms_discount'] = 'Pembelian minimal '.sprintf('Rp. %s', number_format($min)).', potongan '.sprintf('Rp. %s', number_format($total_discount));
+            }else{
+                $used_discount = false;
+                $data['terms_discount'] = "-";
+                $total_discount = 0;
+            }
         }else{
-            $total_discount = 0;
+            $data['terms_discount'] = "-";
+            $used_discount = false;
         }
         $data['hrg_grandtotal'] = $hrg_grandtotal;
         $data['hrg_subtotal'] = $hrg_subtotal;
-        $data['discount'] = $discount2;
-        $data['item_total'] = $order->orderdetails->count();
+        $data['discount'] = $total_discount;
+        $data['item_total'] = 0;
+        foreach ($order->orderdetails as $val) {
+            $data['item_total'] +=(int)$val->qty;
+        }
 
         $order->update($data);
-        $data_bils = [];
+        $data_bills = [];
         $finish_bills = [];
         $nm_customer = "";
         $key_i = -1;
         foreach ($order->orderdetails->sortBy('nm_customer') as $val) {
             if($val->nm_customer==$nm_customer){
-                $hrg_total = $data_bils[$key_i]['bill_total'];
-                $item_total = $data_bils[$key_i]['item_total'];
-                $data_bils[$key_i]['bill_total'] = $hrg_total+($val->qty*$val->product->hrg_product);
-                $data_bils[$key_i]['item_total'] = $val->qty+$item_total;
+                $hrg_total = $data_bills[$key_i]['bill_total'];
+                $item_total = $data_bills[$key_i]['item_total'];
+                $data_bills[$key_i]['bill_total'] = $hrg_total+($val->qty*$val->product->hrg_product);
+                $data_bills[$key_i]['item_total'] = $val->qty+$item_total;
             }else{
                 $key_i++;
-                $data_bils[$key_i]['order_detail_id'] = $val->id;
-                $data_bils[$key_i]['item_total'] = $val->qty;
-                $data_bils[$key_i]['bill_total'] = $val->qty*$val->product->hrg_product;
-                $data_bils[$key_i]['created_at'] = Carbon::now();
-                $data_bils[$key_i]['updated_at'] = Carbon::now();
+                $data_bills[$key_i]['order_detail_id'] = $val->id;
+                $data_bills[$key_i]['item_total'] = $val->qty;
+                $data_bills[$key_i]['bill_total'] = $val->qty*$val->product->hrg_product;
+                $data_bills[$key_i]['created_at'] = Carbon::now();
+                $data_bills[$key_i]['updated_at'] = Carbon::now();
                 $nm_customer = $val->nm_customer;
             }
         }
-        foreach ($data_bils as $key => $val) {
-            if ($discount2<=1) {
-                $finish_bills[$key]['bill_total'] = ($val['bill_total']/$hrg_subtotal)*($hrg_grandtotal-$ongkir)+($ongkir/count($data_bils));
+
+        foreach ($data_bills as $key => $val) {
+            if ($used_discount) {
+                if ($discount2<=1) {
+                    $finish_bills[$key]['bill_total'] = ($val['bill_total']/$hrg_subtotal)*($hrg_grandtotal-$ongkir)+($ongkir/count($data_bills));
+                }else{
+                    $finish_bills[$key]['bill_total'] =
+                    ($hrg_grandtotal-$ongkir)-($total_discount/count($data_bills))+($ongkir/count($data_bills));
+                }
             }else{
-                $finish_bills[$key]['bill_total'] =
-                ($hrg_grandtotal-$ongkir)-($total_discount/count($data_bils))+($ongkir/count($data_bils));
+                $finish_bills[$key]['bill_total'] = $val['bill_total'] + ($ongkir/count($data_bills));
             }
 
             $finish_bills[$key]['order_detail_id'] = $val['order_detail_id'];
@@ -189,7 +207,7 @@ class OrderController extends Controller
             $finish_bills[$key]['created_at'] = $val['created_at'];
             $finish_bills[$key]['updated_at'] = $val['updated_at'];
         }
-        // dd($data_bils);
+        // dd($data_bills);
         // dd($finish_bills);
         SplitBill::insert($finish_bills);
         return redirect()->back()->with([
